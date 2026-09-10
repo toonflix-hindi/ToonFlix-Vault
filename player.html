@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch Anime — Ronin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0911;
+    --panel:#161320;
+    --panel-2:#1f1a2b;
+    --washi:#f1e8d6;
+    --stone:#a89e91;
+    --hanko:#d41432;
+    --hanko-dim:#8a0c20;
+    --gold:#cda355;
+    --teal:#2fbfa8;
+    --gutter:#000000;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse 1200px 700px at 50% -10%, rgba(212,20,50,0.10), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 100% 20%, rgba(205,163,85,0.06), transparent 55%),
+      var(--ink);
+    color:var(--washi);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:400;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  .display{font-family:'Anton', sans-serif;font-weight:400;letter-spacing:0.01em;line-height:0.9;}
+  a{color:inherit;text-decoration:none;}
+  img,svg{display:block;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  ::selection{background:var(--hanko);color:var(--washi);}
+
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:200;
+    opacity:0.045;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* HEADER */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 32px;
+    background:rgba(13,12,15,0.92);backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .logo{font-family:'Anton',sans-serif;font-size:26px;letter-spacing:0.03em;display:flex;align-items:baseline;gap:2px;}
+  .logo .dot{color:var(--hanko);font-size:30px;line-height:0;}
+  .back-link{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:14px;color:var(--stone);transition:color 0.2s;
+  }
+  .back-link:hover{color:var(--washi);}
+
+  /* MAIN PLAYER CONTAINER */
+  main{padding:100px 32px 40px;max-width:1400px;margin:0 auto;}
+
+  .player-layout{
+    display:grid;
+    grid-template-columns: 1fr 340px;
+    gap:28px;
+    margin-bottom:40px;
+  }
+
+  /* VIDEO PLAYER AREA */
+  .player-screen{
+    background:var(--panel);
+    border:3px solid var(--gutter);
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:4px;
+    overflow:hidden;
+    box-shadow:0 20px 40px rgba(0,0,0,0.5);
+  }
+  .player-screen iframe, .player-screen video{
+    width:100%;height:100%;border:none;display:block;
+  }
+  .player-placeholder{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:linear-gradient(135deg, var(--panel-2), var(--ink));
+    color:var(--stone);gap:12px;text-align:center;padding:20px;
+  }
+  .player-placeholder svg{color:var(--hanko);opacity:0.8;}
+
+  /* EPISODES & SERVER CONTROL */
+  .player-controls{
+    background:var(--panel);
+    border:3px solid var(--gutter);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    max-height: 500px;
+  }
+  .control-title{
+    font-size:16px;font-weight:700;color:var(--washi);
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;
+  }
+  .episodes-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(55px, 1fr));
+    gap:8px;
+    overflow-y:auto;
+    padding-right:4px;
+  }
+  .episodes-grid::-webkit-scrollbar{width:4px;}
+  .episodes-grid::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:2px;}
+
+  .ep-btn{
+    padding:10px 0;text-align:center;
+    background:var(--panel-2);border:1px solid rgba(255,255,255,0.1);
+    font-size:13px;font-weight:700;color:var(--stone);border-radius:4px;
+    transition:all 0.2s ease;
+  }
+  .ep-btn:hover{border-color:var(--gold);color:var(--washi);}
+  .ep-btn.active{background:var(--hanko);border-color:var(--hanko);color:var(--washi);}
+
+  /* ANIME DETAILS SECTION */
+  .anime-details-card{
+    background:var(--panel);
+    border:3px solid var(--gutter);
+    padding:28px;
+    display:grid;
+    grid-template-columns: 220px 1fr;
+    gap:28px;
+    margin-bottom:40px;
+  }
+  .anime-poster{
+    width:100%;
+    aspect-ratio:2/3;
+    background-size:cover;
+    background-position:center;
+    border:2px solid rgba(255,255,255,0.1);
+    border-radius:4px;
+    position:relative;
+  }
+  .anime-info-body h1{
+    font-family:'Yuji Syuku', serif;
+    font-size:clamp(26px, 3.5vw, 42px);
+    line-height:1.1;
+    margin-bottom:12px;
+    color:var(--washi);
+  }
+  .anime-meta{
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+    font-size:13px;color:var(--stone);margin-bottom:16px;
+  }
+  .anime-meta .rating{color:var(--teal);font-weight:700;}
+  .anime-meta .tag{padding:3px 10px;border:1px solid rgba(255,255,255,0.15);border-radius:20px;}
+  .synopsis{
+    font-size:14.5px;color:#cfc6b8;line-height:1.6;margin-bottom:20px;
+    max-width:850px;
+  }
+
+  .action-btns{display:flex;gap:12px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 20px;border-radius:4px;font-size:13.5px;font-weight:700;
+    transition:all 0.2s;
+  }
+  .btn-ghost{border:1px solid rgba(255,255,255,0.2);color:var(--washi);}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold);}
+  .btn-ghost.in-list{background:var(--gold);border-color:var(--gold);color:var(--ink);}
+
+  /* RECOMMENDATIONS */
+  .section-head{margin-bottom:20px;}
+  .section-head h2{font-size:28px;text-transform:uppercase;position:relative;display:inline-block;padding-bottom:8px;}
+  .section-head h2::after{content:"";position:absolute;left:0;bottom:0;width:36px;height:3px;background:var(--gold);}
+  
+  .recommendations-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+    gap:16px;
+  }
+  .card{
+    border:3px solid var(--gutter);background:var(--panel);
+    position:relative;cursor:pointer;transition:transform 0.2s ease, border-color 0.2s ease;
+  }
+  .card:hover{transform:translateY(-5px);border-color:var(--gold);}
+  .poster{width:100%;aspect-ratio:2/3;position:relative;overflow:hidden;background-size:cover;background-position:center;}
+  .poster::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.85));}
+  .poster .title-on-art{position:absolute;left:10px;right:10px;bottom:8px;z-index:2;font-size:13px;font-weight:700;line-height:1.2;}
+  .card-body{padding:8px 10px;font-size:11px;color:var(--stone);display:flex;justify-content:space-between;}
+
+  @media(max-width:1024px){
+    .player-layout{grid-template-columns:1fr;}
+    .player-controls{max-height:none;}
+  }
+  @media(max-width:768px){
+    main{padding:80px 16px 30px;}
+    .anime-details-card{grid-template-columns:1fr;gap:20px;padding:20px;}
+    .anime-poster{width:160px;margin:0 auto;}
+    .recommendations-grid{grid-template-columns:repeat(auto-fill, minmax(130px, 1fr));}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="nav">
+  <a href="index.html" class="logo">祝<span class="dot">・</span>RONIN</a>
+  <a href="index.html" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back to Home
+  </a>
+</header>
+
+<main>
+  <!-- VIDEO STREAM & EPISODES -->
+  <div class="player-layout">
+    <div class="player-screen" id="playerScreen">
+      <div class="player-placeholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <p id="playerMessage">Select an episode to start streaming</p>
+      </div>
+    </div>
+    
+    <div class="player-controls">
+      <div class="control-title">
+        <span>Episodes</span>
+        <span id="epCountText" style="font-size:12px;color:var(--stone);">0 Episodes</span>
+      </div>
+      <div class="episodes-grid" id="episodesGrid">
+        <!-- Episode buttons loaded via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ANIME DETAILS -->
+  <div class="anime-details-card">
+    <div class="anime-poster" id="animePoster"></div>
+    <div class="anime-info-body">
+      <h1 id="animeTitle">Loading Anime...</h1>
+      <div class="anime-meta">
+        <span class="rating" id="animeRating">★ 0.0</span>
+        <span class="tag" id="animeYear">----</span>
+        <span class="tag" id="animeGenre">----</span>
+        <span class="tag" id="animeFormat">TV</span>
+        <span class="tag" id="animeSubDub">Sub/Dub</span>
+      </div>
+      <p class="synopsis" id="animeSynopsis">Fetching details...</p>
+      <div class="action-btns">
+        <button class="btn btn-ghost" id="addToListBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span id="addToListLabel">Add to My List</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <section>
+    <div class="section-head">
+      <h2 class="display">You Might Also Like</h2>
+    </div>
+    <div class="recommendations-grid" id="recommendationsGrid">
+      <!-- Related titles -->
+    </div>
+  </section>
+</main>
+
+<script>
+  const FIREBASE_URL = "https://toonflix-wed-default-rtdb.firebaseio.com/";
+  const MY_LIST_KEY = 'roninMyList';
+
+  let currentAnime = null;
+  let allAnimeList = [];
+
+  function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+  }
+
+  function getMyList(){
+    try{ return new Set(JSON.parse(localStorage.getItem(MY_LIST_KEY) || '[]')); }
+    catch(err){ return new Set(); }
+  }
+
+  function saveMyList(set){
+    try{ localStorage.setItem(MY_LIST_KEY, JSON.stringify(Array.from(set))); }
+    catch(err){ console.error(err); }
+  }
+
+  function updateListButton(title){
+    const btn = document.getElementById('addToListBtn');
+    const label = document.getElementById('addToListLabel');
+    const inList = getMyList().has(title);
+    btn.classList.toggle('in-list', inList);
+    label.textContent = inList ? 'Saved in My List' : 'Add to My List';
+  }
+
+  async function fetchLibrary(){
+    try{
+      const res = await fetch(`${FIREBASE_URL}/anime.json`);
+      if(!res.ok) return [];
+      const data = await res.json();
+      if(!data) return [];
+      return Object.entries(data).map(([id, v]) => ({
+        id,
+        title: v.title || "Untitled",
+        genre: v.genre || "Action",
+        year: Number(v.year) || 2026,
+        rating: Number(v.rating) || 7.5,
+        episodes: Number(v.episodes) || 12,
+        subDub: v.subDub || "Sub Only",
+        format: (v.format || "TV").toUpperCase(),
+        synopsis: v.synopsis || "No description available for this anime.",
+        poster: v.poster || null,
+        streamUrl: v.streamUrl || null // Supports video / embed URL from DB
+      }));
+    }catch(e){
+      console.error(e);
+      return [];
+    }
+  }
+
+  function renderEpisodes(totalEps, streamUrl){
+    const grid = document.getElementById('episodesGrid');
+    document.getElementById('epCountText').textContent = `${totalEps} Episodes`;
+    
+    let html = '';
+    for(let i = 1; i <= totalEps; i++){
+      html += `<button class="ep-btn ${i===1?'active':''}" onclick="playEpisode(${i}, '${streamUrl || ''}')">EP ${i}</button>`;
+    }
+    grid.innerHTML = html;
+
+    // Auto load first episode
+    if(totalEps > 0) playEpisode(1, streamUrl);
+  }
+
+  function playEpisode(epNum, streamUrl){
+    document.querySelectorAll('.ep-btn').forEach(btn => btn.classList.remove('active'));
+    const clickedBtn = Array.from(document.querySelectorAll('.ep-btn')).find(b => b.textContent === `EP ${epNum}`);
+    if(clickedBtn) clickedBtn.classList.add('active');
+
+    const screen = document.getElementById('playerScreen');
+    if(streamUrl && streamUrl !== 'null'){
+      // Append episode number if using video API pattern, or render embed directly
+      const finalUrl = streamUrl.includes('{ep}') ? streamUrl.replace('{ep}', epNum) : streamUrl;
+      screen.innerHTML = `<iframe src="${finalUrl}" allowfullscreen></iframe>`;
+    }else{
+      screen.innerHTML = `
+        <div class="player-placeholder">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <p>Playing <strong>Episode ${epNum}</strong></p>
+          <span style="font-size:12px;color:var(--stone);">(No stream URL provided in Admin for this title)</span>
+        </div>
+      `;
+    }
+  }
+
+  function renderRecommendations(currentTitle, genre){
+    const grid = document.getElementById('recommendationsGrid');
+    const filtered = allAnimeList
+      .filter(a => a.title !== currentTitle)
+      .slice(0, 6);
+
+    grid.innerHTML = filtered.map(a => `
+      <div class="card" onclick="window.location.href='player.html?title=${encodeURIComponent(a.title)}'">
+        <div class="poster" style="${a.poster ? `background-image:url('${a.poster}')` : ''}">
+          <div class="title-on-art">${a.title}</div>
+        </div>
+        <div class="card-body">
+          <span>${a.genre}</span>
+          <span>★ ${a.rating.toFixed(1)}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function initPlayer(){
+    const targetTitle = getQueryParam('title');
+    allAnimeList = await fetchLibrary();
+
+    if(!targetTitle || !allAnimeList.length){
+      document.getElementById('animeTitle').textContent = "Anime Not Found";
+      return;
+    }
+
+    currentAnime = allAnimeList.find(a => a.title.toLowerCase() === targetTitle.toLowerCase()) || allAnimeList[0];
+
+    // Populate Details
+    document.title = `Watch ${currentAnime.title} — Ronin`;
+    document.getElementById('animeTitle').textContent = currentAnime.title;
+    document.getElementById('animeRating').textContent = `★ ${currentAnime.rating.toFixed(1)}`;
+    document.getElementById('animeYear').textContent = currentAnime.year;
+    document.getElementById('animeGenre').textContent = currentAnime.genre;
+    document.getElementById('animeFormat').textContent = currentAnime.format;
+    document.getElementById('animeSubDub').textContent = currentAnime.subDub;
+    document.getElementById('animeSynopsis').textContent = currentAnime.synopsis;
+
+    if(currentAnime.poster){
+      document.getElementById('animePoster').style.backgroundImage = `url('${currentAnime.poster}')`;
+    }
+
+    // List button setup
+    updateListButton(currentAnime.title);
+    document.getElementById('addToListBtn').onclick = () => {
+      const list = getMyList();
+      if(list.has(currentAnime.title)) list.delete(currentAnime.title);
+      else list.add(currentAnime.title);
+      saveMyList(list);
+      updateListButton(currentAnime.title);
+    };
+
+    // Render Episodes & Recommendations
+    renderEpisodes(currentAnime.episodes, currentAnime.streamUrl);
+    renderRecommendations(currentAnime.title, currentAnime.genre);
+  }
+
+  initPlayer();
+</script>
+</body>
+</html>

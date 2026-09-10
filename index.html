@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ronin — Anime, uncut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Yuji+Syuku&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0911;
+    --panel:#161320;
+    --panel-2:#1f1a2b;
+    --washi:#f1e8d6;
+    --stone:#a89e91;
+    --hanko:#d41432;
+    --hanko-dim:#8a0c20;
+    --gold:#cda355;
+    --gold-dim:#8f7331;
+    --teal:#2fbfa8;
+    --gutter:#000000;
+  }
+
+  *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+  }
+
+  html{
+    scroll-behavior:smooth;
+  }
+
+  body{
+    background:
+      radial-gradient(ellipse 1200px 700px at 50% -10%, rgba(212,20,50,0.10), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 100% 20%, rgba(205,163,85,0.06), transparent 55%),
+      var(--ink);
+    color:var(--washi);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    font-weight:400;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+
+  .display{
+    font-family:'Anton', sans-serif;
+    font-weight:400;
+    letter-spacing:0.01em;
+    line-height:0.9;
+  }
+
+  a{
+    color:inherit;
+    text-decoration:none;
+  }
+
+  ul{
+    list-style:none;
+  }
+
+  img,svg{
+    display:block;
+  }
+
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    background:none;
+    color:inherit;
+  }
+
+  ::selection{
+    background:var(--hanko);
+    color:var(--washi);
+  }
+
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--teal);
+    outline-offset:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{
+      animation-duration:0.001ms !important;
+      transition-duration:0.001ms !important;
+    }
+  }
+
+  /* GRAIN OVERLAY */
+  .grain{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:200;
+    opacity:0.045;
+    mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* NAVIGATION HEADER */
+  header.nav{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 32px;
+    background:linear-gradient(to bottom, rgba(13,12,15,0.95), rgba(13,12,15,0));
+    transition:background 0.3s ease, border-color 0.3s ease;
+    border-bottom:1px solid transparent;
+  }
+
+  header.nav.scrolled{
+    background:rgba(13,12,15,0.92);
+    backdrop-filter:blur(10px);
+    border-bottom-color:rgba(255,255,255,0.08);
+  }
+
+  .logo{
+    font-family:'Anton',sans-serif;
+    font-size:26px;
+    letter-spacing:0.03em;
+    display:flex;
+    align-items:baseline;
+    gap:2px;
+  }
+
+  .logo .dot{
+    color:var(--hanko);
+    font-size:30px;
+    line-height:0;
+  }
+
+  nav.links{
+    display:flex;
+    gap:36px;
+    font-size:15px;
+    color:var(--stone);
+  }
+
+  nav.links a{
+    position:relative;
+    padding:4px 0;
+    transition:color 0.2s;
+  }
+
+  nav.links a:hover, nav.links a.active{
+    color:var(--washi);
+  }
+
+  nav.links a.active::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:-2px;
+    height:2px;
+    background:var(--hanko);
+  }
+
+  .nav-right{
+    display:flex;
+    align-items:center;
+    gap:20px;
+  }
+
+  .search-wrap{
+    position:relative;
+  }
+
+  .search-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:20px;
+    padding:8px 16px;
+    width:220px;
+    transition:border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .search-box:focus-within{
+    border-color:rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.09);
+  }
+
+  .search-box input{
+    background:none;
+    border:none;
+    color:var(--washi);
+    font-family:inherit;
+    font-size:14px;
+    width:100%;
+    outline:none;
+  }
+
+  .search-box input::placeholder{
+    color:var(--stone);
+  }
+
+  .search-box svg{
+    flex-shrink:0;
+    opacity:0.6;
+  }
+
+  .search-clear{
+    flex-shrink:0;
+    opacity:0.5;
+    display:none;
+    padding:2px;
+  }
+
+  .search-clear:hover{
+    opacity:0.9;
+  }
+
+  .search-clear.show{
+    display:flex;
+  }
+
+  .search-suggest{
+    position:absolute;
+    top:calc(100% + 10px);
+    left:0;
+    width:320px;
+    background:var(--panel-2);
+    border:1px solid rgba(255,255,255,0.1);
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 20px 40px rgba(0,0,0,0.45);
+    opacity:0;
+    transform:translateY(-6px);
+    pointer-events:none;
+    transition:opacity 0.15s ease, transform 0.15s ease;
+    z-index:150;
+    max-height:420px;
+    overflow-y:auto;
+  }
+
+  .search-suggest.open{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+
+  .sg-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 14px;
+    transition:background 0.15s ease;
+    cursor:pointer;
+  }
+
+  .sg-item:hover{
+    background:rgba(255,255,255,0.06);
+  }
+
+  .sg-thumb{
+    width:36px;
+    height:48px;
+    flex-shrink:0;
+    border:1px solid rgba(255,255,255,0.12);
+    background-size:cover;
+    background-position:center;
+  }
+
+  .sg-info{
+    min-width:0;
+    flex:1;
+  }
+
+  .sg-info h5{
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .sg-info span{
+    font-size:11px;
+    color:var(--stone);
+    display:block;
+  }
+
+  .sg-empty{
+    padding:18px 14px;
+    font-size:13px;
+    color:var(--stone);
+    text-align:center;
+  }
+
+  .mobile-search-wrap{
+    display:none;
+  }
+
+  .avatar{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--hanko),var(--hanko-dim));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Anton',sans-serif;
+    font-size:15px;
+    border:2px solid rgba(255,255,255,0.15);
+    flex-shrink:0;
+  }
+
+  .menu-toggle{
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+    width:36px;
+    height:36px;
+    flex-shrink:0;
+    z-index:101;
+  }
+
+  .menu-toggle span{
+    display:block;
+    width:100%;
+    height:2px;
+    background:var(--washi);
+    transition:transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  .menu-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .menu-toggle.open span:nth-child(2){ opacity:0; }
+  .menu-toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  @media (max-width:900px){
+    header.nav{
+      padding:16px 20px;
+    }
+    .logo{
+      font-size:21px;
+    }
+    .search-box{
+      display:none;
+    }
+    .menu-toggle{
+      display:flex;
+      z-index:101; /* Keeps toggle button on top of drawer */
+    }
+    nav.links{
+      position:fixed;
+      top:0;
+      right:0;
+      bottom:0;
+      width:min(78vw,320px);
+      background:#161320 !important; /* Solid background fix for scroll */
+      border-left:1px solid rgba(255,255,255,0.08);
+      flex-direction:column;
+      gap:0;
+      padding:88px 28px 28px;
+      transform:translateX(100%);
+      transition:transform 0.3s ease;
+      z-index:99;
+      display:flex;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+      box-shadow:-10px 0 30px rgba(0,0,0,0.8);
+    }
+    nav.links.open{
+      transform:translateX(0);
+    }
+    nav.links a{
+      font-size:17px;
+      padding:14px 0;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      color:var(--washi);
+    }
+    nav.links a.active::after{
+      display:none;
+    }
+    nav.links a.active{
+      color:var(--hanko);
+    }
+  }
+    .mobile-search-wrap{
+      display:block;
+      margin-bottom:22px;
+      order:-1;
+    }
+    .mobile-search-wrap .search-box{ display:flex; width:100%; }
+    .mobile-search-wrap .search-suggest{ width:100%; }
+    .nav-scrim{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.5);
+      z-index:98;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 0.3s ease;
+    }
+    .nav-scrim.open{ opacity:1; pointer-events:auto; }
+  }
+
+  /* FEATURED SECTION */
+  .featured-section{ padding:112px 32px 0; }
+  .f-card-hero{ border:3px solid var(--gutter); background:var(--panel); cursor:pointer; }
+  .f-hero-media{ position:relative; width:100%; aspect-ratio:16/9; overflow:hidden; background:linear-gradient(160deg,#241a2e,#0a0911 70%); }
+  .f-hero-banner{ position:absolute; inset:0; background-size:cover; background-position:center 20%; background-repeat:no-repeat; opacity:0; transition:opacity 0.6s ease; }
+  .f-hero-banner.show{ opacity:1; }
+  .f-hero-media::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(10,9,17,0) 62%, rgba(10,9,17,0.9) 100%); }
+  .f-chip{ position:absolute; left:16px; bottom:14px; z-index:2; display:flex; align-items:center; gap:8px; font-size:12px; color:var(--washi); background:rgba(10,9,17,0.55); padding:6px 13px; border-radius:20px; border:1px solid rgba(255,255,255,0.12); }
+  .f-chip .pulse{ width:7px; height:7px; border-radius:50%; background:var(--hanko); animation:fpulse 2s infinite; }
+  @keyframes fpulse{ 0%{ box-shadow:0 0 0 0 rgba(212,20,50,0.55); } 70%{ box-shadow:0 0 0 10px rgba(212,20,50,0); } 100%{ box-shadow:0 0 0 0 rgba(212,20,50,0); } }
+  .f-hero-body{ padding:22px 28px 26px; }
+  .f-hero-body h1{ font-family:'Yuji Syuku', serif; font-size:clamp(30px,4.8vw,52px); text-transform:uppercase; margin-bottom:10px; }
+  .f-hero-body h1 span{ color:var(--hanko); }
+  .f-hero-body .f-synopsis{ font-size:15px; color:#cfc6b8; max-width:640px; margin-bottom:18px; -webkit-line-clamp:2; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden; }
+  .f-hero-meta{ display:flex; gap:14px; flex-wrap:wrap; align-items:center; font-size:13px; color:var(--stone); margin-bottom:22px; }
+  .f-hero-meta .rating{ color:var(--teal); font-weight:700; }
+  .f-hero-meta .tag{ padding:4px 11px; border:1px solid rgba(255,255,255,0.18); border-radius:20px; }
+  
+  /* ORIGINAL HERO BUTTONS STYLING RESTORED */
+  .f-hero-actions{ display:flex; gap:14px; flex-wrap:wrap; }
+
+  .btn{ 
+    display:inline-flex; 
+    align-items:center; 
+    gap:10px; 
+    padding:13px 26px; 
+    border-radius:4px; 
+    font-size:14px; 
+    font-weight:700; 
+    transition:transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease; 
+  }
+
+  .btn-primary{ 
+    background:var(--washi); 
+    color:var(--ink); 
+  }
+  .btn-primary:hover{ 
+    transform:translateY(-2px); 
+    background:#fff; 
+  }
+
+  .btn-ghost{ 
+    border:1px solid rgba(255,255,255,0.3); 
+    color:var(--washi); 
+    background:transparent;
+  }
+  .btn-ghost:hover{ 
+    border-color:var(--washi); 
+    transform:translateY(-2px); 
+  }
+  
+  .btn-ghost.in-list{ 
+    background:rgba(212,20,50,0.15); 
+    border-color:var(--hanko); 
+    color:var(--washi); 
+  }
+
+  @media (max-width:900px){
+    .featured-section{ padding:96px 20px 0; }
+    .f-hero-body{ padding:18px 20px 22px; }
+    .btn{ flex:1; justify-content:center; }
+  }
+
+  /* SECTION COMMON LAYOUT */
+  section{ padding:34px 0; }
+  .section-head{ margin-bottom:20px; padding:0 32px; }
+  .section-head h2{ font-size:clamp(26px,3.6vw,40px); text-transform:uppercase; position:relative; display:inline-block; padding-bottom:12px; }
+  .section-head h2::after{ content:""; position:absolute; left:0; bottom:0; width:46px; height:3px; background:var(--gold); }
+  .section-head .tagline{ font-size:13px; color:var(--stone); margin-top:8px; display:block; }
+  .rail-outer{ position:relative; }
+  .rail{ display:flex; gap:4px; overflow-x:auto; padding:0 32px 12px; scroll-snap-type:x proximity; scrollbar-width:none; }
+  .rail::-webkit-scrollbar{ display:none; }
+  .rail-btn{ position:absolute; top:40%; width:44px; height:44px; background:rgba(13,12,15,0.85); border:1px solid rgba(255,255,255,0.15); border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:5; transition:background 0.2s; }
+  .rail-btn:hover{ background:var(--hanko); border-color:var(--hanko); }
+  .rail-btn.prev{ left:4px; }
+  .rail-btn.next{ right:4px; }
+
+  /* CARDS & HEART LIKE BUTTON FIXES */
+  .card{
+    flex:0 0 auto;
+    width:220px;
+    border:3px solid var(--gutter);
+    background:var(--panel);
+    scroll-snap-align:start;
+    position:relative;
+    cursor:pointer;
+    transition:transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover{
+    transform:translateY(-6px);
+    border-color:var(--gold);
+    box-shadow:0 14px 34px rgba(0,0,0,0.45);
+  }
+
+  .poster{
+    width:100%;
+    aspect-ratio:2/3;
+    position:relative;
+    overflow:hidden;
+  }
+  .poster img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .poster::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(0,0,0,0.85) 100%); }
+  .poster .title-on-art{ position:absolute; left:12px; right:12px; bottom:10px; z-index:2; font-size:14px; font-weight:700; line-height:1.2; }
+  
+  /* RATING BADGE */
+  .poster .rate-badge{
+    position:absolute;
+    bottom:36px;
+    left:12px;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    gap:3px;
+    background:rgba(10,9,17,0.72);
+    color:var(--gold);
+    border:1px solid rgba(205,163,85,0.4);
+    padding:2px 7px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+  }
+
+  /* HEART LIKE BUTTON FOR CARDS */
+  .card-heart{
+    position:absolute;
+    top:8px;
+    right:8px;
+    z-index:10;
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:rgba(10,9,17,0.65);
+    backdrop-filter:blur(4px);
+    border:1px solid rgba(255,255,255,0.18);
+    color:var(--washi);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .card-heart svg{
+    width:16px;
+    height:16px;
+    stroke:var(--washi);
+    stroke-width:2;
+    fill:none;
+    transition:all 0.2s ease;
+  }
+
+  .card-heart:hover{
+    transform:scale(1.15);
+    background:rgba(10,9,17,0.9);
+    border-color:var(--hanko);
+  }
+
+  .card-heart:hover svg{
+    stroke:var(--hanko);
+  }
+
+  /* ACTIVE SAVED HEART */
+  .card-heart.active{
+    background:rgba(212,20,50,0.25);
+    border-color:var(--hanko);
+  }
+
+  .card-heart.active svg{
+    fill:var(--hanko);
+    stroke:var(--hanko);
+  }
+
+  .card-body{ padding:10px 12px 14px; }
+  .card-meta{ display:flex; justify-content:space-between; font-size:12px; color:var(--stone); }
+
+  /* GRADIENT ACCENTS */
+  .p1{ background:linear-gradient(160deg,#2a0f16,#0d0c0f 70%); }
+  .p2{ background:linear-gradient(160deg,#0e2a28,#0d0c0f 70%); }
+  .p3{ background:linear-gradient(160deg,#241a2e,#0d0c0f 70%); }
+  .p4{ background:linear-gradient(160deg,#2e2210,#0d0c0f 70%); }
+  .p5{ background:linear-gradient(160deg,#1a2a10,#0d0c0f 70%); }
+  .p6{ background:linear-gradient(160deg,#2a1a0e,#0d0c0f 70%); }
+  .p7{ background:linear-gradient(160deg,#101f2e,#0d0c0f 70%); }
+  .p8{ background:linear-gradient(160deg,#2a0e24,#0d0c0f 70%); }
+
+  @media (max-width:900px){
+    section{ padding:26px 0; }
+    .section-head{ padding:0 20px; }
+    .rail{ padding:0 20px 12px; gap:10px; }
+    .card{ width:150px; }
+  }
+
+  @media (max-width:480px){
+    .card{ width:128px; }
+    .card-heart{ width:28px; height:28px; top:6px; right:6px; }
+    .card-heart svg{ width:14px; height:14px; }
+  }
+
+  /* TOP 10 RANKINGS */
+  .top10-list{ padding:0 32px; display:grid; grid-template-columns:1fr 1fr; gap:0 48px; }
+  .trend-row{ display:flex; align-items:center; gap:20px; padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.08); cursor:pointer; position:relative; }
+  .trend-num{ font-family:'Anton',sans-serif; font-size:40px; color:transparent; -webkit-text-stroke:1.5px rgba(255,255,255,0.35); width:56px; flex-shrink:0; }
+  .trend-row:nth-child(-n+3) .trend-num{ -webkit-text-stroke:0; color:var(--hanko); }
+  .trend-thumb{ width:52px; height:70px; flex-shrink:0; border:2px solid var(--gutter); background-size:cover; background-position:center; }
+  .trend-info{ flex:1; }
+  .trend-info h4{ font-size:15px; margin-bottom:4px; }
+  .trend-info span{ font-size:12px; color:var(--stone); }
+
+  @media (max-width:800px){ .top10-list{ grid-template-columns:1fr; } }
+  .empty-state{ padding:0 32px; color:var(--stone); font-size:14px; }
+
+  /* FOOTER */
+  footer{ border-top:1px solid rgba(255,255,255,0.08); padding:56px 32px 32px; }
+  .footer-grid{ display:grid; grid-template-columns:1.6fr 1fr 1fr; gap:40px; margin-bottom:36px; }
+  .footer-brand p{ color:var(--stone); font-size:14px; }
+  .footer-col h5{ font-size:13px; color:var(--stone); margin-bottom:16px; }
+  .footer-col ul li{ margin-bottom:10px; }
+  .footer-col ul li a{ font-size:14px; color:#cfc6b8; }
+  .footer-disclaimer{ display:flex; gap:12px; background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:16px 18px; margin-bottom:24px; }
+  .footer-bottom{ display:flex; justify-content:space-between; font-size:13px; color:var(--stone); }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- HEADER NAVIGATION -->
+<header class="nav" id="siteNav">
+  <div class="logo">祝<span class="dot">・</span>RONIN</div>
+  <nav class="links">
+    <div class="search-wrap mobile-search-wrap" id="searchWrapMobile">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInputMobile" placeholder="Search titles..." autocomplete="off">
+        <button class="search-clear" id="searchClearMobile" aria-label="Clear search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="search-suggest" id="searchSuggestMobile"></div>
+    </div>
+    <a href="#" class="active">Home</a>
+    <a href="#mylist">My List</a>
+    <a href="#airing">Airing</a>
+    <a href="#latest">Latest</a>
+    <a href="#top10">Top 10</a>
+    <a href="#popular">Popular</a>
+    <a href="#toprated">Top Rated</a>
+    <a href="#genres">Genres</a>
+    <a href="#movies">Movies</a>
+  </nav>
+  <div class="nav-right">
+    <div class="search-wrap" id="searchWrap">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Search titles..." autocomplete="off">
+        <button class="search-clear" id="searchClear" aria-label="Clear search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="search-suggest" id="searchSuggest"></div>
+    </div>
+    <div class="avatar">K</div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+<div class="nav-scrim" id="navScrim"></div>
+
+<main>
+
+  <!-- FEATURED BANNER SECTION -->
+  <section id="featured" class="featured-section">
+    <div class="f-card-hero" id="featuredHeroCard">
+      <div class="f-hero-media">
+        <div class="f-hero-banner" id="featuredBanner"></div>
+        <div class="f-chip"><span class="pulse"></span> <span id="featuredEyebrow">Now streaming — featured pick</span></div>
+      </div>
+      <div class="f-hero-body">
+        <h1 class="display" id="featuredTitle">Loading...</h1>
+        <p class="f-synopsis" id="featuredSynopsis">Fetching details...</p>
+        <div class="f-hero-meta">
+          <span class="rating" id="featuredRating">★ 0.0</span>
+          <span class="tag" id="featuredYear">2026</span>
+          <span class="tag" id="featuredGenre">Fantasy</span>
+          <span class="tag" id="featuredEpisodes">-- episodes</span>
+          <span class="tag" id="featuredSubDub">Sub &amp; Dub</span>
+        </div>
+        <!-- RESTORED ORIGINAL BUTTONS -->
+        <div class="f-hero-actions">
+          <button class="btn btn-primary" id="watchNowBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Watch now
+          </button>
+          <button class="btn btn-ghost" id="addToListBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            <span id="addToListLabel">Add to my list</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MY LIST SECTION -->
+  <section id="mylist">
+    <div class="section-head">
+      <h2 class="display">My List</h2>
+      <span class="tagline">Titles saved with the heart button</span>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-mylist">‹</button>
+      <div class="rail" id="rail-mylist"></div>
+      <button class="rail-btn next" data-rail="rail-mylist">›</button>
+    </div>
+    <p class="empty-state" id="mylistEmpty" style="display:none;">Your list is empty — click the heart icon on any anime to save it here.</p>
+  </section>
+
+  <!-- CURRENTLY AIRING SECTION -->
+  <section id="airing">
+    <div class="section-head">
+      <h2 class="display">Currently Airing</h2>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-airing">‹</button>
+      <div class="rail" id="rail-airing"></div>
+      <button class="rail-btn next" data-rail="rail-airing">›</button>
+    </div>
+    <p class="empty-state" id="airingEmpty" style="display:none;">Nothing from this year yet.</p>
+  </section>
+
+  <!-- LATEST SECTION -->
+  <section id="latest">
+    <div class="section-head">
+      <h2 class="display">Latest</h2>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-latest">‹</button>
+      <div class="rail" id="rail-latest"></div>
+      <button class="rail-btn next" data-rail="rail-latest">›</button>
+    </div>
+  </section>
+
+  <!-- TOP 10 RANKED SECTION -->
+  <section id="top10">
+    <div class="section-head">
+      <h2 class="display">Top 10</h2>
+    </div>
+    <div class="top10-list" id="top10List"></div>
+  </section>
+
+  <!-- POPULAR SECTION -->
+  <section id="popular">
+    <div class="section-head">
+      <h2 class="display">Popular</h2>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-popular">‹</button>
+      <div class="rail" id="rail-popular"></div>
+      <button class="rail-btn next" data-rail="rail-popular">›</button>
+    </div>
+  </section>
+
+  <!-- TOP RATED SECTION -->
+  <section id="toprated">
+    <div class="section-head">
+      <h2 class="display">Top Rated</h2>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-toprated">‹</button>
+      <div class="rail" id="rail-toprated"></div>
+      <button class="rail-btn next" data-rail="rail-toprated">›</button>
+    </div>
+    <p class="empty-state" id="topratedEmpty" style="display:none;">No title has hit 8.5+ yet.</p>
+  </section>
+
+  <!-- GENRES DYNAMIC SECTIONS -->
+  <div id="genres">
+    <div id="genre-sections"></div>
+  </div>
+
+  <!-- MOVIES SECTION -->
+  <section id="movies">
+    <div class="section-head">
+      <h2 class="display">Movies</h2>
+    </div>
+    <div class="rail-outer">
+      <button class="rail-btn prev" data-rail="rail-movies">‹</button>
+      <div class="rail" id="rail-movies"></div>
+      <button class="rail-btn next" data-rail="rail-movies">›</button>
+    </div>
+    <p class="empty-state" id="moviesEmpty" style="display:none;">No movies added yet.</p>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">祝<span class="dot">・</span>RONIN</div>
+      <p>An anime streaming library built for fans.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Browse</h5>
+      <ul>
+        <li><a href="#latest">Latest</a></li>
+        <li><a href="#popular">Popular</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Support</h5>
+      <ul>
+        <li><a href="#">Help center</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-disclaimer">
+    <p><strong>Disclaimer:</strong> Ronin does not host any files on its own servers.</p>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Ronin Streaming.</span>
+  </div>
+</footer>
+
+<script>
+  /* SCROLL & MOBILE MENU LISTENERS */
+  const nav = document.getElementById('siteNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  const menuToggle = document.getElementById('menuToggle');
+  const navLinks = document.querySelector('nav.links');
+  const navScrim = document.getElementById('navScrim');
+
+  menuToggle.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    menuToggle.classList.toggle('open', isOpen);
+    navScrim.classList.toggle('open', isOpen);
+  });
+
+  navScrim.addEventListener('click', () => {
+    menuToggle.classList.remove('open');
+    navLinks.classList.remove('open');
+    navScrim.classList.remove('open');
+  });
+
+  /* DATA ENGINE */
+  const FIREBASE_URL = "https://toonflix-wed-default-rtdb.firebaseio.com/";
+  const CURRENT_YEAR = new Date().getFullYear();
+  let library = [];
+
+  function posterClass(title){
+    let hash = 0;
+    for(let i=0;i<title.length;i++) hash = (hash * 31 + title.charCodeAt(i)) >>> 0;
+    return 'p' + (hash % 8 + 1);
+  }
+
+  function dedupeByTitle(list){
+    const map = new Map();
+    for(const item of list){
+      const key = item.title.trim().toLowerCase();
+      if(!map.has(key)) map.set(key, item);
+    }
+    return Array.from(map.values());
+  }
+
+  async function fetchFirebaseAnime(){
+    try{
+      const res = await fetch(`${FIREBASE_URL}/anime.json`);
+      if(!res.ok) return [];
+      const data = await res.json();
+      if(!data) return [];
+      return Object.entries(data).map(([id, v]) => ({
+        id,
+        title: v.title || "Untitled",
+        genre: v.genre || "Action",
+        year: Number(v.year) || CURRENT_YEAR,
+        rating: Number(v.rating) || 7.5,
+        episodes: Number(v.episodes) || 12,
+        subDub: v.subDub || "Sub Only",
+        format: (v.format || "TV").toUpperCase(),
+        popularity: Number(v.popularity) || 0,
+        synopsis: v.synopsis || "",
+        poster: v.poster || null,
+        addedAt: Number(v.addedAt) || Date.now(),
+      }));
+    }catch(err){ return []; }
+  }
+
+  /* MY LIST LOCAL STORAGE STATE */
+  const MY_LIST_KEY = 'roninMyList';
+  function getMyList(){
+    try{ return new Set(JSON.parse(localStorage.getItem(MY_LIST_KEY) || '[]')); }
+    catch(err){ return new Set(); }
+  }
+  function saveMyList(set){
+    try{ localStorage.setItem(MY_LIST_KEY, JSON.stringify(Array.from(set))); }
+    catch(err){}
+  }
+
+  /* HEART BUTTON COMPONENT HTML */
+  function heartBtnHTML(title){
+    const isSaved = getMyList().has(title);
+    return `
+      <button class="card-heart ${isSaved ? 'active' : ''}" data-heart="${escapeAttr(title)}" aria-label="Add to my list">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      </button>
+    `;
+  }
+
+  function posterHTML(title, cls, imgUrl, rating){
+    const badge = rating ? `<div class="rate-badge">★ ${Number(rating).toFixed(1)}</div>` : '';
+    const heart = heartBtnHTML(title);
+    if(imgUrl){
+      return `<div class="poster">${heart}<img src="${imgUrl}" alt="${title}" loading="lazy">${badge}<div class="title-on-art">${title}</div></div>`;
+    }
+    return `<div class="poster ${cls}">${heart}${badge}<div class="title-on-art">${title}</div></div>`;
+  }
+
+  function renderRail(id, list){
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = list.map(a => `
+      <div class="card" data-title="${escapeAttr(a.title)}">
+        ${posterHTML(a.title, posterClass(a.title), a.poster, a.rating)}
+        <div class="card-body">
+          <div class="card-meta"><span>${a.genre}</span><span>${a.year}</span></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTop10(list){
+    const el = document.getElementById('top10List');
+    el.innerHTML = list.map((a,i) => `
+      <div class="trend-row" data-title="${escapeAttr(a.title)}">
+        <div class="trend-num display">${String(i+1).padStart(2,'0')}</div>
+        <div class="trend-thumb ${a.poster ? '' : posterClass(a.title)}" ${a.poster ? `style="background-image:url('${a.poster}')"` : ''}></div>
+        <div class="trend-info">
+          <h4>${a.title}</h4>
+          <span>${a.rating.toFixed(1)} rating · ${a.episodes} episodes</span>
+        </div>
+        ${heartBtnHTML(a.title)}
+      </div>
+    `).join('');
+  }
+
+  function escapeAttr(str){ return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+  function escapeHTML(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function openPlayer(title) {
+    if(!title) return;
+    window.location.href = `player.html?title=${encodeURIComponent(title)}`;
+  }
+
+  function updateAddToListButton(title){
+    const btn = document.getElementById('addToListBtn');
+    const label = document.getElementById('addToListLabel');
+    if(!btn || !label) return;
+    const inList = getMyList().has(title);
+    btn.classList.toggle('in-list', inList);
+    label.textContent = inList ? 'Added to my list' : 'Add to my list';
+  }
+
+  /* RE-SYNC ALL HEART ICONS ACROSS PAGE */
+  function syncAllHeartIcons(){
+    const list = getMyList();
+    document.querySelectorAll('.card-heart').forEach(btn => {
+      const title = btn.dataset.heart;
+      btn.classList.toggle('active', list.has(title));
+    });
+  }
+
+  function renderMyList(){
+    const saved = getMyList();
+    const items = library.filter(a => saved.has(a.title));
+    const el = document.getElementById('rail-mylist');
+    document.getElementById('mylistEmpty').style.display = items.length ? 'none' : 'block';
+    el.innerHTML = items.map(a => `
+      <div class="card" data-title="${escapeAttr(a.title)}">
+        ${posterHTML(a.title, posterClass(a.title), a.poster, a.rating)}
+        <div class="card-body">
+          <div class="card-meta"><span>${a.genre}</span><span>${a.year}</span></div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* EVENT DELEGATION FOR CLICK EVENTS */
+  document.addEventListener('click', (e) => {
+    // 1. Heart Button Toggle
+    const heartBtn = e.target.closest('[data-heart]');
+    if(heartBtn){
+      e.stopPropagation();
+      const title = heartBtn.dataset.heart;
+      const list = getMyList();
+      if(list.has(title)) list.delete(title); else list.add(title);
+      saveMyList(list);
+      
+      syncAllHeartIcons();
+      renderMyList();
+      const featuredTitle = document.getElementById('watchNowBtn')?.dataset?.title;
+      if(featuredTitle === title) updateAddToListButton(title);
+      return;
+    }
+
+    // 2. Hero Add to List Button
+    const addListBtn = e.target.closest('#addToListBtn');
+    if(addListBtn){
+      e.stopPropagation();
+      const title = addListBtn.dataset.title;
+      if(!title) return;
+      const list = getMyList();
+      if(list.has(title)) list.delete(title); else list.add(title);
+      saveMyList(list);
+      
+      updateAddToListButton(title);
+      syncAllHeartIcons();
+      renderMyList();
+      return;
+    }
+
+    // 3. Watch Now Button click
+    const watchBtn = e.target.closest('#watchNowBtn');
+    if(watchBtn){
+      e.stopPropagation();
+      openPlayer(watchBtn.dataset.title);
+      return;
+    }
+
+    // 4. Hero Card click
+    const heroCard = e.target.closest('#featuredHeroCard');
+    if(heroCard && !e.target.closest('#addToListBtn') && !e.target.closest('#watchNowBtn')){
+      const title = document.getElementById('watchNowBtn').dataset.title;
+      openPlayer(title);
+      return;
+    }
+
+    // 5. Card click
+    const cardItem = e.target.closest('.card, .trend-row');
+    if(cardItem && cardItem.dataset.title){
+      openPlayer(cardItem.dataset.title);
+      return;
+    }
+  });
+
+  /* 3-TIER API BANNER ENGINE */
+  async function fetchBannerAniList(title) {
+    const query = `query ($search: String) { Media(search: $search, type: ANIME) { bannerImage } }`;
+    try {
+      const res = await fetch('https://graphql.anilist.co', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, variables: { search: title } })
+      });
+      const data = await res.json();
+      return data?.data?.Media?.bannerImage || null;
+    } catch (e) { return null; }
+  }
+
+  async function fetchBannerJikan(title) {
+    try {
+      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(title)}&limit=1`);
+      const data = await res.json();
+      return data?.data?.[0]?.images?.jpg?.large_image_url || null;
+    } catch (e) { return null; }
+  }
+
+  async function fetchBannerKitsu(title) {
+    try {
+      const res = await fetch(`https://kitsu.io/api/edge/anime?filter[text]=${encodeURIComponent(title)}&page[limit]=1`);
+      const data = await res.json();
+      return data?.data?.[0]?.attributes?.coverImage?.original || null;
+    } catch (e) { return null; }
+  }
+
+  async function getHighQualityBanner(title, fallbackPoster = null) {
+    let banner = await fetchBannerAniList(title);
+    if (banner) return banner;
+    banner = await fetchBannerJikan(title);
+    if (banner) return banner;
+    banner = await fetchBannerKitsu(title);
+    if (banner) return banner;
+    return fallbackPoster;
+  }
+
+  async function applyFeatured(a){
+    const [first, ...rest] = a.title.split(' ');
+    document.getElementById('featuredTitle').innerHTML = rest.length ? `${first}<br><span>${rest.join(' ')}</span>` : `<span>${first}</span>`;
+    document.getElementById('featuredSynopsis').textContent = a.synopsis || "Streaming now on Ronin.";
+    document.getElementById('featuredRating').textContent = `★ ${a.rating.toFixed(1)}`;
+    document.getElementById('featuredYear').textContent = a.year;
+    document.getElementById('featuredGenre').textContent = a.genre;
+    document.getElementById('featuredEpisodes').textContent = `${a.episodes} episodes`;
+    document.getElementById('featuredSubDub').textContent = a.subDub;
+
+    document.getElementById('watchNowBtn').dataset.title = a.title;
+    document.getElementById('addToListBtn').dataset.title = a.title;
+    
+    const bannerEl = document.getElementById('featuredBanner');
+    bannerEl.classList.remove('show');
+
+    const bannerUrl = await getHighQualityBanner(a.title, a.poster);
+    if(bannerUrl){
+      bannerEl.style.backgroundImage = `url("${bannerUrl}")`;
+      bannerEl.classList.add('show');
+    }
+
+    updateAddToListButton(a.title);
+  }
+
+  function renderGenreSections(list){
+    const container = document.getElementById('genre-sections');
+    const groups = new Map();
+    list.forEach(a => {
+      const label = (a.genre || 'Other').trim();
+      const key = label.toLowerCase();
+      if(!groups.has(key)) groups.set(key, { label, items: [] });
+      groups.get(key).items.push(a);
+    });
+
+    const genres = Array.from(groups.values()).filter(g => g.items.length >= 1);
+
+    container.innerHTML = genres.map(g => {
+      const railId = `rail-genre-${g.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      return `
+        <section>
+          <div class="section-head"><h2 class="display">${escapeHTML(g.label)}</h2></div>
+          <div class="rail-outer">
+            <button class="rail-btn prev" data-rail="${railId}">‹</button>
+            <div class="rail" id="${railId}"></div>
+            <button class="rail-btn next" data-rail="${railId}">›</button>
+          </div>
+        </section>
+      `;
+    }).join('');
+
+    genres.forEach(g => {
+      const railId = `rail-genre-${g.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+      renderRail(railId, g.items);
+    });
+  }
+
+  async function init(){
+    library = dedupeByTitle(await fetchFirebaseAnime());
+
+    renderRail('rail-latest', [...library].sort((a,b) => b.addedAt - a.addedAt).slice(0,10));
+    renderTop10([...library].sort((a,b) => b.rating - a.rating).slice(0,10));
+    renderRail('rail-popular', [...library].sort((a,b) => b.popularity - a.popularity).slice(0,10));
+
+    const airing = library.filter(a => a.year === CURRENT_YEAR);
+    if(airing.length) renderRail('rail-airing', airing);
+    else document.getElementById('airingEmpty').style.display = 'block';
+
+    const toprated = library.filter(a => a.rating >= 8.5);
+    if(toprated.length) renderRail('rail-toprated', toprated);
+    else document.getElementById('topratedEmpty').style.display = 'block';
+
+    const movies = library.filter(a => a.format === 'MOVIE');
+    if(movies.length) renderRail('rail-movies', movies);
+    else document.getElementById('moviesEmpty').style.display = 'block';
+
+    renderGenreSections(library);
+    renderMyList();
+
+    if(library.length){
+      applyFeatured(library[Math.floor(Math.random() * library.length)]);
+    }
+  }
+  init();
+
+  /* RAIL BUTTON SCROLL */
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.rail-btn');
+    if(!btn) return;
+    const rail = document.getElementById(btn.dataset.rail);
+    if(!rail) return;
+    const dir = btn.classList.contains('next') ? 1 : -1;
+    rail.scrollBy({left: dir * 400, behavior:'smooth'});
+  });
+
+  /* SEARCH ENGINE */
+  function initSearch(input, suggest, clear){
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      clear.classList.toggle('show', q.length > 0);
+      if(!q){ suggest.classList.remove('open'); return; }
+
+      const matches = library.filter(a => a.title.toLowerCase().includes(q)).slice(0,6);
+      if(!matches.length){
+        suggest.innerHTML = `<div class="sg-empty">No results found</div>`;
+      }else{
+        suggest.innerHTML = matches.map(a => `
+          <div class="sg-item" onclick="openPlayer('${escapeAttr(a.title)}')">
+            <div class="sg-thumb" style="${a.poster ? `background-image:url('${a.poster}')` : ''}"></div>
+            <div class="sg-info">
+              <h5>${escapeHTML(a.title)}</h5>
+              <span>${a.genre} · ★ ${a.rating}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      suggest.classList.add('open');
+    });
+
+    clear.addEventListener('click', () => {
+      input.value = '';
+      clear.classList.remove('show');
+      suggest.classList.remove('open');
+    });
+  }
+
+  initSearch(document.getElementById('searchInput'), document.getElementById('searchSuggest'), document.getElementById('searchClear'));
+  initSearch(document.getElementById('searchInputMobile'), document.getElementById('searchSuggestMobile'), document.getElementById('searchClearMobile'));
+</script>
+
+</body>
+</html>

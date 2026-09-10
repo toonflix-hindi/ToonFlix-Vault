@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Ronin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d0c0f;
+    --panel:#18161b;
+    --panel-2:#211e24;
+    --washi:#eee6d6;
+    --stone:#a89e91;
+    --hanko:#c8102e;
+    --hanko-dim:#8a0c20;
+    --teal:#2fbfa8;
+    --border:rgba(255,255,255,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--ink);color:var(--washi);
+    font-family:'Zen Kaku Gothic New', sans-serif;
+    min-height:100vh;
+  }
+  .display{font-family:'Anton',sans-serif;letter-spacing:0.01em;line-height:0.95;}
+  a{color:inherit;}
+  input,select,textarea,button{font-family:inherit;}
+  img{display:block;}
+
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:20px 32px;border-bottom:1px solid var(--border);
+    flex-wrap:wrap;gap:12px;
+  }
+  .logo{font-family:'Anton',sans-serif;font-size:22px;}
+  .logo .dot{color:var(--hanko);}
+  header a.back{font-size:13px;color:var(--stone);border-bottom:1px solid var(--stone);padding-bottom:2px;}
+  header a.back:hover{color:var(--washi);border-color:var(--washi);}
+
+  .shell{max-width:960px;margin:0 auto;padding:40px 24px 80px;}
+
+  .warn{
+    display:flex;gap:12px;align-items:flex-start;
+    background:rgba(200,16,46,0.1);border:1px solid rgba(200,16,46,0.35);
+    border-radius:4px;padding:14px 16px;margin-bottom:32px;font-size:13px;color:#e3b7be;
+  }
+  .warn svg{flex-shrink:0;margin-top:2px;color:var(--hanko);}
+
+  h1{font-size:clamp(30px,5vw,44px);text-transform:uppercase;margin-bottom:8px;}
+  .sub{color:var(--stone);font-size:14px;margin-bottom:32px;max-width:560px;}
+
+  .search-panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:6px;
+    padding:24px;margin-bottom:16px;
+  }
+  .search-row{display:flex;gap:12px;}
+  .search-row input{
+    flex:1;background:var(--ink);border:1px solid var(--border);border-radius:4px;
+    padding:14px 16px;color:var(--washi);font-size:15px;
+  }
+  .search-row input:focus{outline:none;border-color:var(--teal);}
+  .btn{
+    padding:14px 26px;border-radius:4px;font-size:14px;font-weight:700;
+    transition:transform 0.15s ease, background 0.2s ease;border:none;cursor:pointer;white-space:nowrap;
+  }
+  .btn-primary{background:var(--hanko);color:var(--washi);}
+  .btn-primary:hover{background:var(--hanko-dim);}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  .search-hint{font-size:12px;color:var(--stone);margin-top:10px;}
+
+  .mode-tabs{display:flex;gap:8px;margin-bottom:16px;}
+  .mode-tab{
+    padding:9px 18px;border-radius:20px;font-size:13px;font-weight:700;
+    border:1px solid var(--border);color:var(--stone);transition:all 0.2s;
+  }
+  .mode-tab.active{background:var(--washi);color:var(--ink);border-color:var(--washi);}
+  .mode-tab:not(.active):hover{border-color:var(--washi);color:var(--washi);}
+
+  .bulk-panel{display:none;}
+  .bulk-panel.active{display:block;}
+  .bulk-panel textarea{
+    width:100%;background:var(--ink);border:1px solid var(--border);border-radius:4px;
+    padding:14px 16px;color:var(--washi);font-size:14px;min-height:90px;resize:vertical;
+  }
+  .bulk-panel textarea:focus{outline:none;border-color:var(--teal);}
+  .bulk-actions{display:flex;align-items:center;gap:14px;margin-top:14px;}
+  .bulk-count{font-size:12px;color:var(--stone);}
+
+  .bulk-progress{margin-top:24px;display:flex;flex-direction:column;gap:8px;}
+  .bulk-row{
+    display:flex;align-items:center;gap:12px;padding:10px 14px;
+    background:var(--panel);border:1px solid var(--border);border-radius:4px;font-size:13px;
+  }
+  .bulk-row img{width:28px;height:38px;object-fit:cover;border-radius:2px;flex-shrink:0;}
+  .bulk-row .swatch{width:28px;height:38px;border-radius:2px;flex-shrink:0;background:var(--panel-2);}
+  .bulk-row .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bulk-row .state{font-size:12px;flex-shrink:0;}
+  .bulk-row .state.pending{color:var(--stone);}
+  .bulk-row .state.ok{color:var(--teal);}
+  .bulk-row .state.err{color:var(--hanko);}
+
+  .search-status{font-size:13px;color:var(--stone);margin:20px 0;min-height:20px;}
+  .search-status.err{color:var(--hanko);}
+
+  .results{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+    gap:16px;margin-bottom:48px;
+  }
+  .result-card{
+    background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  .result-poster{width:100%;aspect-ratio:2/3;position:relative;background:var(--panel-2);}
+  .result-poster img{width:100%;height:100%;object-fit:cover;}
+  .result-body{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;}
+  .result-body h4{font-size:13px;line-height:1.3;}
+  .result-meta{display:flex;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--stone);}
+  .result-meta span{border:1px solid var(--border);border-radius:20px;padding:2px 8px;}
+  .add-btn{
+    margin-top:auto;background:none;border:1px solid var(--teal);color:var(--teal);
+    padding:8px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;
+    transition:background 0.2s, color 0.2s;
+  }
+  .add-btn:hover{background:var(--teal);color:var(--ink);}
+  .add-btn.added{border-color:var(--stone);color:var(--stone);cursor:default;background:none;}
+  .add-btn:disabled{cursor:not-allowed;}
+
+  .rules{
+    background:var(--panel-2);border:1px solid var(--border);border-radius:6px;
+    padding:22px 24px;margin-bottom:40px;font-size:13px;color:var(--stone);
+  }
+  .rules h3{color:var(--washi);font-size:14px;margin-bottom:10px;}
+  .rules ul{padding-left:18px;display:flex;flex-direction:column;gap:6px;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:6px;
+    padding:28px;margin-bottom:40px;
+  }
+  .panel h2{font-size:18px;margin-bottom:20px;text-transform:uppercase;letter-spacing:0.02em;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);}
+  th{color:var(--stone);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:0.03em;}
+  tbody tr:hover{background:rgba(255,255,255,0.03);}
+  .thumb{width:34px;height:48px;object-fit:cover;border-radius:2px;}
+  .pill{
+    display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;
+    border:1px solid var(--border);color:var(--stone);
+  }
+  .del-btn{
+    background:none;border:1px solid rgba(200,16,46,0.4);color:var(--hanko);
+    padding:6px 12px;border-radius:4px;font-size:12px;cursor:pointer;transition:background 0.2s;
+  }
+  .del-btn:hover{background:rgba(200,16,46,0.15);}
+  .empty-row td{color:var(--stone);text-align:center;padding:28px;}
+  .table-wrap{overflow-x:auto;}
+
+  @media (max-width:640px){
+    header{padding:16px 20px;}
+    .shell{padding:28px 16px 60px;}
+    .search-row{flex-direction:column;}
+    .panel{padding:20px;}
+    .results{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">祝<span class="dot">・</span>RONIN <span style="color:var(--stone);font-size:14px;font-family:'Zen Kaku Gothic New',sans-serif;">/ admin</span></div>
+  <a class="back" href="anime-stream-homepage.html">← Back to site</a>
+</header>
+
+<div class="shell">
+
+  <div class="warn">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+
+  </div>
+
+  <h1 class="display">Add a title</h1>
+  <p class="sub">Poster, genre, rating, episode count, release year and synopsis are pulled automatically from AniList. Add one at a time and pick the right match, or paste several names at once.</p>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="single">Single</button>
+    <button class="mode-tab" data-mode="bulk">Bulk add</button>
+  </div>
+
+  <div class="bulk-panel active" id="panel-single">
+    <div class="search-panel">
+      <div class="search-row">
+        <input type="text" id="searchInput" placeholder="e.g. Attack on Titan" autocomplete="off">
+        <button class="btn btn-primary" id="searchBtn">Search</button>
+      </div>
+      <div class="search-hint">Data source: AniList public API — no key required.</div>
+    </div>
+    <div class="search-status" id="searchStatus"></div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div class="bulk-panel" id="panel-bulk">
+    <div class="search-panel">
+      <textarea id="bulkInput" placeholder="Naruto, One Piece, Attack on Titan, Death Note"></textarea>
+      <div class="bulk-actions">
+        <button class="btn btn-primary" id="bulkBtn">Add all</button>
+        <span class="bulk-count" id="bulkCount"></span>
+      </div>
+      <div class="search-hint">Separate names with commas. Each one takes the top AniList match automatically — no picking.</div>
+    </div>
+    <div class="bulk-progress" id="bulkProgress"></div>
+  </div>
+
+  <div class="rules">
+    <h3>How placement works</h3>
+    <ul>
+      <li>Latest — the most recently added titles, newest first.</li>
+      <li>Top 10 — the 10 highest-rated titles across the whole library, ranked.</li>
+      <li>Popular — sorted by AniList's popularity score, highest first.</li>
+      <li>Movies — any title where AniList's format is "Movie" instead of "TV".</li>
+      <li>Hero spotlight — the highest-rated title released this year, poster and synopsis included.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h2>Library (live from Firebase)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>Title</th><th>Genre</th><th>Year</th><th>Rating</th><th>Episodes</th><th></th></tr>
+        </thead>
+        <tbody id="libraryBody">
+          <tr class="empty-row"><td colspan="7">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const FIREBASE_URL = "https://toonflix-wed-default-rtdb.firebaseio.com/";
+  const ANILIST_URL = "https://graphql.anilist.co";
+
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchStatus = document.getElementById('searchStatus');
+  const resultsEl = document.getElementById('results');
+  const libraryBody = document.getElementById('libraryBody');
+
+  function setSearchStatus(msg, isErr){
+    searchStatus.textContent = msg;
+    searchStatus.className = 'search-status' + (isErr ? ' err' : '');
+  }
+
+  function stripHtml(html){
+    return (html || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, '').trim();
+  }
+
+  const ANILIST_QUERY = `
+    query ($search: String) {
+      Page(page: 1, perPage: 8) {
+        media(search: $search, type: ANIME, sort: SEARCH_MATCH) {
+          id
+          title { romaji english }
+          coverImage { large }
+          genres
+          episodes
+          averageScore
+          popularity
+          format
+          startDate { year }
+          description(asHtml: false)
+        }
+      }
+    }
+  `;
+
+  async function searchAniList(name){
+    const res = await fetch(ANILIST_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json', 'Accept':'application/json'},
+      body: JSON.stringify({ query: ANILIST_QUERY, variables: { search: name } }),
+    });
+    if(!res.ok) throw new Error('AniList request failed');
+    const json = await res.json();
+    return (json.data && json.data.Page && json.data.Page.media) || [];
+  }
+
+  function renderResults(list){
+    if(!list.length){
+      resultsEl.innerHTML = '';
+      setSearchStatus('No matches found — try a different spelling.', true);
+      return;
+    }
+    setSearchStatus(`${list.length} match${list.length>1?'es':''} — pick the right one to add it.`);
+    resultsEl.innerHTML = list.map((m, i) => {
+      const title = m.title.english || m.title.romaji || 'Untitled';
+      const genre = (m.genres && m.genres[0]) || 'Anime';
+      const year = (m.startDate && m.startDate.year) || '—';
+      const rating = m.averageScore ? (m.averageScore / 10).toFixed(1) : '—';
+      const episodes = m.episodes || '—';
+      const isMovie = m.format === 'MOVIE';
+      return `
+        <div class="result-card">
+          <div class="result-poster">
+            ${m.coverImage && m.coverImage.large ? `<img src="${m.coverImage.large}" alt="${title} poster" loading="lazy">` : ''}
+          </div>
+          <div class="result-body">
+            <h4>${title}</h4>
+            <div class="result-meta">
+              <span>${genre}</span><span>${year}</span><span>★ ${rating}</span><span>${isMovie ? 'Movie' : episodes + ' ep'}</span>
+            </div>
+            <button class="add-btn" data-index="${i}">Add to library</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    resultsEl.querySelectorAll('.add-btn').forEach(btn => {
+      btn.addEventListener('click', () => addResult(list[Number(btn.dataset.index)], btn));
+    });
+  }
+
+  async function addResult(m, btn){
+    btn.disabled = true;
+    btn.textContent = 'Adding…';
+    const payload = {
+      title: m.title.english || m.title.romaji || 'Untitled',
+      genre: (m.genres && m.genres[0]) || 'Anime',
+      year: (m.startDate && m.startDate.year) || new Date().getFullYear(),
+      rating: m.averageScore ? Number((m.averageScore / 10).toFixed(1)) : 7.0,
+      episodes: m.episodes || 12,
+      subDub: 'Sub Only',
+      format: m.format || 'TV',
+      popularity: m.popularity || 0,
+      synopsis: stripHtml(m.description).slice(0, 300),
+      poster: (m.coverImage && m.coverImage.large) || '',
+      addedAt: Date.now(),
+    };
+    try{
+      const res = await fetch(`${FIREBASE_URL}/anime.json`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+      });
+      if(!res.ok) throw new Error('Write failed');
+      btn.textContent = 'Added ✓';
+      btn.classList.add('added');
+      loadLibrary();
+    }catch(err){
+      console.error(err);
+      btn.disabled = false;
+      btn.textContent = 'Try again';
+    }
+  }
+
+  async function runSearch(){
+    const name = searchInput.value.trim();
+    if(!name) return;
+    searchBtn.disabled = true;
+    resultsEl.innerHTML = '';
+    setSearchStatus('Searching…');
+    try{
+      const list = await searchAniList(name);
+      renderResults(list);
+    }catch(err){
+      console.error(err);
+      setSearchStatus("Couldn't reach AniList — check your connection and try again.", true);
+    }finally{
+      searchBtn.disabled = false;
+    }
+  }
+
+  searchBtn.addEventListener('click', runSearch);
+  searchInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') runSearch(); });
+
+  // ---- mode tabs ----
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.bulk-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.mode).classList.add('active');
+    });
+  });
+
+  // ---- bulk add ----
+  const bulkInput = document.getElementById('bulkInput');
+  const bulkBtn = document.getElementById('bulkBtn');
+  const bulkCount = document.getElementById('bulkCount');
+  const bulkProgress = document.getElementById('bulkProgress');
+
+  function parseBulkNames(){
+    return bulkInput.value.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  bulkInput.addEventListener('input', () => {
+    const n = parseBulkNames().length;
+    bulkCount.textContent = n ? `${n} title${n>1?'s':''} queued` : '';
+  });
+
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  function bulkRow(name){
+    const row = document.createElement('div');
+    row.className = 'bulk-row';
+    row.innerHTML = `
+      <div class="swatch"></div>
+      <div class="name">${name}</div>
+      <div class="state pending">Waiting…</div>
+    `;
+    bulkProgress.appendChild(row);
+    return row;
+  }
+
+  function setBulkRow(row, state, cls, poster, title){
+    const stateEl = row.querySelector('.state');
+    stateEl.textContent = state;
+    stateEl.className = 'state ' + cls;
+    if(title){
+      row.querySelector('.name').textContent = title;
+    }
+    if(poster){
+      const swatch = row.querySelector('.swatch');
+      const img = document.createElement('img');
+      img.src = poster;
+      img.alt = '';
+      swatch.replaceWith(img);
+    }
+  }
+
+  async function addFromMedia(m){
+    const payload = {
+      title: m.title.english || m.title.romaji || 'Untitled',
+      genre: (m.genres && m.genres[0]) || 'Anime',
+      year: (m.startDate && m.startDate.year) || new Date().getFullYear(),
+      rating: m.averageScore ? Number((m.averageScore / 10).toFixed(1)) : 7.0,
+      episodes: m.episodes || 12,
+      subDub: 'Sub Only',
+      format: m.format || 'TV',
+      popularity: m.popularity || 0,
+      synopsis: stripHtml(m.description).slice(0, 300),
+      poster: (m.coverImage && m.coverImage.large) || '',
+      addedAt: Date.now(),
+    };
+    const res = await fetch(`${FIREBASE_URL}/anime.json`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if(!res.ok) throw new Error('Write failed');
+    return payload;
+  }
+
+  async function runBulkAdd(){
+    const names = parseBulkNames();
+    if(!names.length) return;
+
+    bulkBtn.disabled = true;
+    bulkProgress.innerHTML = '';
+    let added = 0, failed = 0;
+
+    for(const name of names){
+      const row = bulkRow(name);
+      setBulkRow(row, 'Searching…', 'pending');
+      try{
+        const matches = await searchAniList(name);
+        if(!matches.length){
+          setBulkRow(row, 'No match found', 'err');
+          failed++;
+        }else{
+          const m = matches[0];
+          const saved = await addFromMedia(m);
+          setBulkRow(row, 'Added ✓', 'ok', saved.poster, saved.title);
+          added++;
+        }
+      }catch(err){
+        console.error(err);
+        setBulkRow(row, 'Failed', 'err');
+        failed++;
+      }
+      await sleep(400); // gentle pacing to stay under AniList's rate limit
+    }
+
+    bulkBtn.disabled = false;
+    bulkCount.textContent = `${added} added${failed ? `, ${failed} failed` : ''}`;
+    if(added) loadLibrary();
+  }
+
+  bulkBtn.addEventListener('click', runBulkAdd);
+
+  async function loadLibrary(){
+    libraryBody.innerHTML = `<tr class="empty-row"><td colspan="7">Loading…</td></tr>`;
+    try{
+      const res = await fetch(`${FIREBASE_URL}/anime.json`);
+      const data = await res.json();
+      if(!data){
+        libraryBody.innerHTML = `<tr class="empty-row"><td colspan="7">No titles added yet — search above.</td></tr>`;
+        return;
+      }
+      const entries = Object.entries(data).sort((a,b) => (b[1].addedAt||0) - (a[1].addedAt||0));
+      libraryBody.innerHTML = entries.map(([id, v]) => `
+        <tr>
+          <td>${v.poster ? `<img class="thumb" src="${v.poster}" alt="">` : ''}</td>
+          <td>${v.title || 'Untitled'}${v.format === 'MOVIE' ? ' <span class="pill">Movie</span>' : ''}</td>
+          <td><span class="pill">${v.genre || '—'}</span></td>
+          <td>${v.year || '—'}</td>
+          <td>${v.rating != null ? Number(v.rating).toFixed(1) : '—'}</td>
+          <td>${v.episodes || '—'}</td>
+          <td><button class="del-btn" data-id="${id}">Remove</button></td>
+        </tr>
+      `).join('');
+      libraryBody.querySelectorAll('.del-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteAnime(btn.dataset.id));
+      });
+    }catch(err){
+      console.error(err);
+      libraryBody.innerHTML = `<tr class="empty-row"><td colspan="7">Couldn't reach the database. Check your connection.</td></tr>`;
+    }
+  }
+
+  async function deleteAnime(id){
+    if(!confirm('Remove this title from the library?')) return;
+    try{
+      await fetch(`${FIREBASE_URL}/anime/${id}.json`, { method: 'DELETE' });
+      loadLibrary();
+    }catch(err){
+      console.error(err);
+      alert('Could not remove this title — check your connection.');
+    }
+  }
+
+  loadLibrary();
+</script>
+
+</body>
+</html>
